@@ -8,9 +8,9 @@ import (
 )
 
 type Ball struct {
-	x      int
-	y      int
-	r      int
+	x int
+	y int
+	//r      int
 	xSpeed int
 	ySpeed int
 }
@@ -22,7 +22,15 @@ func NewBall() *Ball {
 	}
 }
 
-func (b *Ball) Update() error {
+func (b *Ball) Collides(l *Level) bool {
+	return l.CollidesBottom(b.x, b.y)
+}
+
+func (b *Ball) Update(l *Level) error {
+	if b.Collides(l) {
+		b.ySpeed *= -1
+	}
+
 	b.x += b.xSpeed
 	b.y += b.ySpeed
 	return nil

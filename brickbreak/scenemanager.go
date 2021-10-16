@@ -9,7 +9,7 @@ type Scene interface {
 
 type SceneManager struct {
 	current Scene
-	next    Scene
+	//next    Scene
 }
 
 func NewSceneManager(current Scene) *SceneManager {
