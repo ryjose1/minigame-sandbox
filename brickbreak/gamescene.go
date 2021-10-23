@@ -7,26 +7,24 @@ import (
 )
 
 type GameScene struct {
-	ball   *Ball
 	level  *Level
 	logger *log.BuiltinLogger
 }
 
 func NewGameScene(logger *log.BuiltinLogger) *GameScene {
 	return &GameScene{
-		ball:   NewBall(),
-		level:  NewLevel(),
+		level:  NewLevel(logger),
 		logger: logger,
 	}
 
 }
 
 func (s *GameScene) Update() error {
-	s.ball.Update(s.level)
+	s.level.Update()
 	return nil
 }
 
 func (s *GameScene) Draw(r *ebiten.Image) {
-	s.ball.Draw(r)
-	s.logger.Infof("%d %d", s.ball.x, s.ball.y)
+	s.level.Draw(r)
+	s.logger.Infof("Ball - X:%d Y:%d %f %f", s.level.ball.x, s.level.ball.y, s.level.ball.hitbox.X, s.level.ball.hitbox.Y)
 }
