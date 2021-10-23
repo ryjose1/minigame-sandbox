@@ -41,11 +41,11 @@ func (b *Ball) Update(l *Level) error {
 
 	if collision := b.hitbox.Check(float64(b.xSpeed), float64(b.ySpeed)); collision != nil {
 		vector := collision.ContactWithObject(collision.Objects[0])
-		if vector.X() != 0 {
-			b.xSpeed = int(vector.X()) / 16
+		if vector.X() == 0 {
+			b.xSpeed *= -1
 		}
-		if vector.Y() != 0 {
-			b.ySpeed = int(vector.Y()) / 16
+		if vector.Y() == 0 {
+			b.ySpeed *= -1
 		}
 		b.logger.Infof("Collision Vector - X: %f Y: %f", vector.X(), vector.Y())
 
