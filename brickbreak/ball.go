@@ -24,8 +24,8 @@ func NewBall(tileSize int, logger *log.BuiltinLogger) *Ball {
 	x := 32
 	y := 32
 	return &Ball{
-		xSpeed: 1,
-		ySpeed: 1,
+		xSpeed: 4,
+		ySpeed: 4,
 		x:      x,
 		y:      y,
 		hitbox: resolv.NewObject(float64(x), float64(y), float64(tileSize), float64(tileSize)),
@@ -40,15 +40,16 @@ func (b *Ball) Collides(l *Level) bool {
 func (b *Ball) Update(l *Level) error {
 
 	if collision := b.hitbox.Check(float64(b.xSpeed), float64(b.ySpeed)); collision != nil {
-		vector := collision.ContactWithObject(collision.Objects[0])
-		if vector.X() == 0 {
-			b.xSpeed *= -1
+		for _, object := range collision.Objects {
+			vector := collision.ContactWithObject(object)
+			if vector.X() == 0 {
+				b.xSpeed *= -1
+			}
+			if vector.Y() == 0 {
+				b.ySpeed *= -1
+			}
+			b.logger.Infof("Collision Vector - X: %f Y: %f", vector.X(), vector.Y())
 		}
-		if vector.Y() == 0 {
-			b.ySpeed *= -1
-		}
-		b.logger.Infof("Collision Vector - X: %f Y: %f", vector.X(), vector.Y())
-
 	}
 
 	b.x += b.xSpeed
