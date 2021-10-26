@@ -28,13 +28,9 @@ func NewBall(tileSize int, logger *log.BuiltinLogger) *Ball {
 		ySpeed: 4,
 		x:      x,
 		y:      y,
-		hitbox: resolv.NewObject(float64(x), float64(y), float64(tileSize), float64(tileSize)),
+		hitbox: resolv.NewObject(float64(x), float64(y), float64(tileSize), float64(tileSize), "ball"),
 		logger: logger,
 	}
-}
-
-func (b *Ball) Collides(l *Level) bool {
-	return l.CollidesBottom(b.x, b.y)
 }
 
 func (b *Ball) Update(l *Level) error {
@@ -42,6 +38,7 @@ func (b *Ball) Update(l *Level) error {
 	if collision := b.hitbox.Check(float64(b.xSpeed), float64(b.ySpeed)); collision != nil {
 		for _, object := range collision.Objects {
 			vector := collision.ContactWithObject(object)
+			// Todo, replace with vector math
 			if vector.X() == 0 {
 				b.xSpeed *= -1
 			}
@@ -60,6 +57,6 @@ func (b *Ball) Update(l *Level) error {
 	return nil
 }
 
-func (b *Ball) Draw(r *ebiten.Image) {
-	ebitenutil.DrawRect(r, float64(b.x), float64(b.y), 16, 16, color.White)
+func (b *Ball) Draw(r *ebiten.Image, object *resolv.Object) {
+	ebitenutil.DrawRect(r, object.X, object.Y, object.W, object.H, color.White)
 }
