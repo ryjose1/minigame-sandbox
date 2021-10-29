@@ -11,31 +11,31 @@ import (
 )
 
 type Ball struct {
-	x int
-	y int
+	x float64
+	y float64
 	//r      int
-	xSpeed int
-	ySpeed int
+	xSpeed float64
+	ySpeed float64
 	hitbox *resolv.Object
 	logger *log.BuiltinLogger
 }
 
-func NewBall(tileSize int, logger *log.BuiltinLogger) *Ball {
-	x := 32
-	y := 32
+func NewBall(tileSize float64, logger *log.BuiltinLogger, tag string) *Ball {
+	x := 32.0
+	y := 32.0
 	return &Ball{
-		xSpeed: 4,
-		ySpeed: 4,
 		x:      x,
 		y:      y,
-		hitbox: resolv.NewObject(float64(x), float64(y), float64(tileSize), float64(tileSize), "ball"),
+		xSpeed: 4.0,
+		ySpeed: 4.0,
+		hitbox: resolv.NewObject(x, y, tileSize, tileSize, tag),
 		logger: logger,
 	}
 }
 
-func (b *Ball) Update(l *Level) error {
+func (b *Ball) Update() error {
 
-	if collision := b.hitbox.Check(float64(b.xSpeed), float64(b.ySpeed)); collision != nil {
+	if collision := b.hitbox.Check(b.xSpeed, b.ySpeed); collision != nil {
 		for _, object := range collision.Objects {
 			vector := collision.ContactWithObject(object)
 			// Todo, replace with vector math
@@ -51,8 +51,8 @@ func (b *Ball) Update(l *Level) error {
 
 	b.x += b.xSpeed
 	b.y += b.ySpeed
-	b.hitbox.X += float64(b.xSpeed)
-	b.hitbox.Y += float64(b.ySpeed)
+	b.hitbox.X += b.xSpeed
+	b.hitbox.Y += b.ySpeed
 	b.hitbox.Update()
 	return nil
 }

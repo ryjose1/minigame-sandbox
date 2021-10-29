@@ -13,19 +13,21 @@ import (
 const tileSize = 16
 
 type Level struct {
-	space  *resolv.Space
-	ball   *Ball
-	logger *log.BuiltinLogger
-	//paddle *Paddle
-	//brickLayout []int
+	space       *resolv.Space
+	ball        *Ball
+	logger      *log.BuiltinLogger
+	paddle      *Paddle
+	brickLayout []int
 }
 
 func NewLevel(logger *log.BuiltinLogger) *Level {
-	ball := NewBall(tileSize, logger)
+	ball := NewBall(tileSize, logger, "ball")
+	paddle := NewPaddle(tileSize, logger, "paddle")
 
 	return &Level{
-		space:  initSpace(ball),
+		space:  initSpace(ball, paddle),
 		ball:   ball,
+		paddle: paddle,
 		logger: logger,
 	}
 }
@@ -42,7 +44,7 @@ func makeBorders(width, height, tileSize float64) []*resolv.Object {
 	return borders
 }
 
-func initSpace(ball *Ball) *resolv.Space {
+func initSpace(ball *Ball, paddle *Paddle) *resolv.Space {
 	width, height := ebiten.WindowSize()
 	space := resolv.NewSpace(width, height, tileSize, tileSize)
 
@@ -51,15 +53,13 @@ func initSpace(ball *Ball) *resolv.Space {
 	}
 
 	space.Add(ball.hitbox)
+	space.Add(paddle.hitbox)
 	return space
 }
 
-func (l *Level) CollidesBottom(x, y int) bool {
-	return false
-}
-
 func (l *Level) Update() error {
-	l.ball.Update(l)
+	l.ball.Update()
+	l.paddle.Update("border")
 	return nil
 }
 
@@ -70,6 +70,8 @@ func (l *Level) Draw(r *ebiten.Image) {
 			ebitenutil.DrawRect(r, object.X, object.Y, object.W, object.H, color.White)
 		case object.HasTags("ball"):
 			l.ball.Draw(r, object)
+		case object.HasTags("paddle"):
+			l.paddle.Draw(r, object)
 		}
 	}
 
