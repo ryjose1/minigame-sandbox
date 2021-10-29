@@ -2,19 +2,20 @@ package brickbreak
 
 import (
 	"github.com/ryjose1/minigames/log"
+	"github.com/ryjose1/minigames/scene"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Game struct {
-	sceneManager *SceneManager
+	sceneManager *scene.SceneManager
 	Logger       *log.BuiltinLogger
 }
 
 func NewGame(logger *log.BuiltinLogger) *Game {
 	return &Game{
 		Logger:       logger,
-		sceneManager: NewSceneManager(NewGameScene(logger)),
+		sceneManager: scene.NewSceneManager(NewGameScene(logger)),
 	}
 }
 
