@@ -1,13 +1,10 @@
 package brickbreak
 
 import (
-	"image/color"
-
 	"github.com/ryjose1/minigames/components"
 	"github.com/ryjose1/minigames/log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Level struct {
@@ -22,10 +19,14 @@ type Level struct {
 // NewLevel creates a new brickbreak level
 func NewLevel(position *components.Position, logger *log.BuiltinLogger) *Level {
 	objects := NewLevelObjects(logger, position)
-	borders := makeLevelBorders(position, 16)
 	space := components.NewSpace(position)
 
-	space.AddHitboxes(append([]*components.Hitbox{objects.paddle.hitbox, objects.ball.hitbox}, borders...))
+	wallHitboxes := []*components.Hitbox{}
+	for _, wall := range objects.walls {
+		wallHitboxes = append(wallHitboxes, wall.hitbox)
+	}
+
+	space.AddHitboxes(append([]*components.Hitbox{objects.paddle.hitbox, objects.ball.hitbox}, wallHitboxes...))
 
 	return &Level{
 		position: position,
@@ -38,6 +39,7 @@ func NewLevel(position *components.Position, logger *log.BuiltinLogger) *Level {
 type LevelObjects struct {
 	ball   *Ball
 	paddle *Paddle
+	walls  []*Wall
 }
 
 func NewLevelObjects(logger *log.BuiltinLogger, levelPosition *components.Position) *LevelObjects {
@@ -51,24 +53,27 @@ func NewLevelObjects(logger *log.BuiltinLogger, levelPosition *components.Positi
 	paddlePosition := components.NewPosition(paddleX, paddleY, components.TILESIZE*4, components.TILESIZE)
 	paddle := NewPaddle(paddlePosition, logger, "paddle")
 
+	walls := makeLevelWalls(levelPosition, 16)
+
 	return &LevelObjects{
 		ball:   ball,
 		paddle: paddle,
+		walls:  walls,
 	}
 }
 
-// makeLevelBorders creates the border objects, which serve as the "walls" in the level
-func makeLevelBorders(levelPosition *components.Position, thickness int) []*components.Hitbox {
+// makeLevelWalls creates the border objects, which serve as the "walls" in the level
+func makeLevelWalls(levelPosition *components.Position, thickness int) []*Wall {
 	width := levelPosition.Width()
 	height := levelPosition.Height()
 	x := levelPosition.X()
 	y := levelPosition.Y()
 
-	borders := []*components.Hitbox{
-		components.NewHitbox(components.NewPosition(x, y, width, thickness), "border"),
-		components.NewHitbox(components.NewPosition(x, y+height-thickness, width, thickness), "border"),
-		components.NewHitbox(components.NewPosition(x, y+thickness, thickness, height-2*thickness), "border"),
-		components.NewHitbox(components.NewPosition(x+width-thickness, y+thickness, thickness, height-2*thickness), "border"),
+	borders := []*Wall{
+		NewWall(components.NewPosition(x, y, width, thickness), "border"),
+		NewWall(components.NewPosition(x, y+height-thickness, width, thickness), "border"),
+		NewWall(components.NewPosition(x, y+thickness, thickness, height-2*thickness), "border"),
+		NewWall(components.NewPosition(x+width-thickness, y+thickness, thickness, height-2*thickness), "border"),
 	}
 	return borders
 }
@@ -82,14 +87,9 @@ func (l *Level) Update() error {
 
 // Draw creates visualizations for each of the objects in the level
 func (l *Level) Draw(r *ebiten.Image) {
-
 	l.objects.paddle.Draw(r)
 	l.objects.ball.Draw(r)
-	for _, object := range l.space.Objects() {
-		switch {
-		case object.HasTags("border"):
-			ebitenutil.DrawRect(r, object.X, object.Y, object.W, object.H, color.White)
-		}
+	for _, wall := range l.objects.walls {
+		wall.Draw(r)
 	}
-
 }
