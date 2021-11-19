@@ -18,8 +18,8 @@ type Paddle struct {
 	logger *log.BuiltinLogger
 }
 
-func NewPaddle(position *components.Position, logger *log.BuiltinLogger, tag string) *Paddle {
-	hitbox := components.NewHitbox(position, tag)
+func NewPaddle(position *components.Position, offset *components.Position, logger *log.BuiltinLogger, tag string) *Paddle {
+	hitbox := components.NewHitbox(components.NewPosition(position.X()-offset.X(), position.Y()-offset.Y(), position.Width(), position.Height()), tag)
 	return &Paddle{
 		position: position,
 		xSpeed:   2,

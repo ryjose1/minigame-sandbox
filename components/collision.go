@@ -7,13 +7,15 @@ import (
 const TILESIZE = 16
 
 type HitSpace struct {
-	space *resolv.Space
+	space  *resolv.Space
+	offset *Position
 }
 
 func NewSpace(position *Position) *HitSpace {
 	space := resolv.NewSpace(position.Width(), position.Height(), TILESIZE, TILESIZE)
 	return &HitSpace{
-		space: space,
+		space:  space,
+		offset: position,
 	}
 }
 

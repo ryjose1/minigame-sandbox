@@ -14,8 +14,8 @@ type Wall struct {
 	hitbox   *components.Hitbox
 }
 
-func NewWall(position *components.Position, tag string) *Wall {
-	hitbox := components.NewHitbox(position, tag)
+func NewWall(position *components.Position, offset *components.Position, tag string) *Wall {
+	hitbox := components.NewHitbox(components.NewPosition(position.X()-offset.X(), position.Y()-offset.Y(), position.Width(), position.Height()), tag)
 	return &Wall{
 		position: position,
 		hitbox:   hitbox,

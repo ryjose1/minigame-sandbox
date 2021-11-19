@@ -43,15 +43,18 @@ type LevelObjects struct {
 }
 
 func NewLevelObjects(logger *log.BuiltinLogger, levelPosition *components.Position) *LevelObjects {
-	ballX := levelPosition.X() + int(float64(levelPosition.Width())*0.1)
-	ballY := levelPosition.Y() + int(float64(levelPosition.Height())*0.1)
+	// TODO: Fix collisions for imperfect overlaps
+	//ballX := levelPosition.X() + int(float64(levelPosition.Width())*0.1)
+	//ballY := levelPosition.Y() + int(float64(levelPosition.Height())*0.1)
+	ballX := levelPosition.X() + int(float64(levelPosition.Width())*0.25)
+	ballY := levelPosition.Y() + int(float64(levelPosition.Height())*0.25)
 	ballPosition := components.NewPosition(ballX, ballY, components.TILESIZE, components.TILESIZE)
-	ball := NewBall(ballPosition, logger, "ball")
+	ball := NewBall(ballPosition, levelPosition, logger, "ball")
 
 	paddleX := levelPosition.X() + int(float64(levelPosition.Width())*0.5)
 	paddleY := levelPosition.Y() + int(float64(levelPosition.Height())*0.8)
 	paddlePosition := components.NewPosition(paddleX, paddleY, components.TILESIZE*4, components.TILESIZE)
-	paddle := NewPaddle(paddlePosition, logger, "paddle")
+	paddle := NewPaddle(paddlePosition, levelPosition, logger, "paddle")
 
 	walls := makeLevelWalls(levelPosition, 16)
 
@@ -70,10 +73,10 @@ func makeLevelWalls(levelPosition *components.Position, thickness int) []*Wall {
 	y := levelPosition.Y()
 
 	borders := []*Wall{
-		NewWall(components.NewPosition(x, y, width, thickness), "border"),
-		NewWall(components.NewPosition(x, y+height-thickness, width, thickness), "border"),
-		NewWall(components.NewPosition(x, y+thickness, thickness, height-2*thickness), "border"),
-		NewWall(components.NewPosition(x+width-thickness, y+thickness, thickness, height-2*thickness), "border"),
+		NewWall(components.NewPosition(x, y, width, thickness), levelPosition, "border"),
+		NewWall(components.NewPosition(x, y+height-thickness, width, thickness), levelPosition, "border"),
+		NewWall(components.NewPosition(x, y+thickness, thickness, height-2*thickness), levelPosition, "border"),
+		NewWall(components.NewPosition(x+width-thickness, y+thickness, thickness, height-2*thickness), levelPosition, "border"),
 	}
 	return borders
 }

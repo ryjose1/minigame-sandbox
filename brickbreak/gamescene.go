@@ -15,7 +15,7 @@ type GameScene struct {
 func NewGameScene(logger *log.BuiltinLogger) *GameScene {
 	width, height := ebiten.WindowSize()
 
-	levelPosition := components.NewPosition(0, 0, width/4*3, height)
+	levelPosition := components.NewPosition(width/4, height/4, width/2, height/2)
 
 	return &GameScene{
 		level:  NewLevel(levelPosition, logger),

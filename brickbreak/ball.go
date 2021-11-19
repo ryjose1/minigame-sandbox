@@ -18,8 +18,8 @@ type Ball struct {
 	logger   *log.BuiltinLogger
 }
 
-func NewBall(position *components.Position, logger *log.BuiltinLogger, tag string) *Ball {
-	hitbox := components.NewHitbox(position, tag)
+func NewBall(position *components.Position, offset *components.Position, logger *log.BuiltinLogger, tag string) *Ball {
+	hitbox := components.NewHitbox(components.NewPosition(position.X()-offset.X(), position.Y()-offset.Y(), position.Width(), position.Height()), tag)
 	return &Ball{
 		position: position,
 		xSpeed:   2.0,
