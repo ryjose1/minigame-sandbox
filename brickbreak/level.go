@@ -3,75 +3,92 @@ package brickbreak
 import (
 	"image/color"
 
+	"github.com/ryjose1/minigames/components"
 	"github.com/ryjose1/minigames/log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/solarlune/resolv"
 )
 
-const tileSize = 16
-
 type Level struct {
-	space       *resolv.Space
-	ball        *Ball
-	logger      *log.BuiltinLogger
-	paddle      *Paddle
-	brickLayout []int
+	position *components.Position
+	objects  *LevelObjects
+	space    *components.HitSpace
+	logger   *log.BuiltinLogger
+
+	//brickLayout []int
 }
 
-func NewLevel(logger *log.BuiltinLogger) *Level {
-	ball := NewBall(tileSize, logger, "ball")
-	paddle := NewPaddle(tileSize, logger, "paddle")
+// NewLevel creates a new brickbreak level
+func NewLevel(position *components.Position, logger *log.BuiltinLogger) *Level {
+	objects := NewLevelObjects(logger, position)
+	borders := makeLevelBorders(position, 16)
+	space := components.NewSpace(position)
+
+	space.AddHitboxes(append([]*components.Hitbox{objects.paddle.hitbox, objects.ball.hitbox}, borders...))
 
 	return &Level{
-		space:  initSpace(ball, paddle),
-		ball:   ball,
-		paddle: paddle,
-		logger: logger,
+		position: position,
+		objects:  objects,
+		space:    space,
+		logger:   logger,
 	}
 }
 
-func makeBorders(width, height, tileSize float64) []*resolv.Object {
-	borders := []*resolv.Object{
-		// top and bottom
-		resolv.NewObject(0, 0, width, tileSize, "border"),
-		resolv.NewObject(0, height-tileSize, width, tileSize, "border"),
-		//left and right
-		resolv.NewObject(0, tileSize, tileSize, height-2*tileSize, "border"),
-		resolv.NewObject(width-tileSize, tileSize, tileSize, height-2*tileSize, "border"),
+type LevelObjects struct {
+	ball   *Ball
+	paddle *Paddle
+}
+
+func NewLevelObjects(logger *log.BuiltinLogger, levelPosition *components.Position) *LevelObjects {
+	ballX := levelPosition.X() + int(float64(levelPosition.Width())*0.1)
+	ballY := levelPosition.Y() + int(float64(levelPosition.Height())*0.1)
+	ballPosition := components.NewPosition(ballX, ballY, components.TILESIZE, components.TILESIZE)
+	ball := NewBall(ballPosition, logger, "ball")
+
+	paddleX := levelPosition.X() + int(float64(levelPosition.Width())*0.5)
+	paddleY := levelPosition.Y() + int(float64(levelPosition.Height())*0.8)
+	paddlePosition := components.NewPosition(paddleX, paddleY, components.TILESIZE*4, components.TILESIZE)
+	paddle := NewPaddle(paddlePosition, logger, "paddle")
+
+	return &LevelObjects{
+		ball:   ball,
+		paddle: paddle,
+	}
+}
+
+// makeLevelBorders creates the border objects, which serve as the "walls" in the level
+func makeLevelBorders(levelPosition *components.Position, thickness int) []*components.Hitbox {
+	width := levelPosition.Width()
+	height := levelPosition.Height()
+	x := levelPosition.X()
+	y := levelPosition.Y()
+
+	borders := []*components.Hitbox{
+		components.NewHitbox(components.NewPosition(x, y, width, thickness), "border"),
+		components.NewHitbox(components.NewPosition(x, y+height-thickness, width, thickness), "border"),
+		components.NewHitbox(components.NewPosition(x, y+thickness, thickness, height-2*thickness), "border"),
+		components.NewHitbox(components.NewPosition(x+width-thickness, y+thickness, thickness, height-2*thickness), "border"),
 	}
 	return borders
 }
 
-func initSpace(ball *Ball, paddle *Paddle) *resolv.Space {
-	width, height := ebiten.WindowSize()
-	space := resolv.NewSpace(width, height, tileSize, tileSize)
-
-	for _, border := range makeBorders(float64(width), float64(height), float64(tileSize)) {
-		space.Add(border)
-	}
-
-	space.Add(ball.hitbox)
-	space.Add(paddle.hitbox)
-	return space
-}
-
+// Update progresses the objects in the level by one tick
 func (l *Level) Update() error {
-	l.ball.Update()
-	l.paddle.Update("border")
+	l.objects.ball.Update()
+	l.objects.paddle.Update("border")
 	return nil
 }
 
+// Draw creates visualizations for each of the objects in the level
 func (l *Level) Draw(r *ebiten.Image) {
+
+	l.objects.paddle.Draw(r)
+	l.objects.ball.Draw(r)
 	for _, object := range l.space.Objects() {
 		switch {
 		case object.HasTags("border"):
 			ebitenutil.DrawRect(r, object.X, object.Y, object.W, object.H, color.White)
-		case object.HasTags("ball"):
-			l.ball.Draw(r, object)
-		case object.HasTags("paddle"):
-			l.paddle.Draw(r, object)
 		}
 	}
 

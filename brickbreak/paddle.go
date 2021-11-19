@@ -5,53 +5,45 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/ryjose1/minigames/components"
 	"github.com/ryjose1/minigames/log"
-	"github.com/solarlune/resolv"
 )
 
 type Paddle struct {
-	x      float64
-	y      float64
-	xSpeed float64
-	ySpeed float64
-	hitbox *resolv.Object
+	position *components.Position
+	hitbox   *components.Hitbox
+	xSpeed   int
+	ySpeed   int
 
 	logger *log.BuiltinLogger
 }
 
-func NewPaddle(tileSize float64, logger *log.BuiltinLogger, tag string) *Paddle {
-	x := 320.0
-	y := 400.0
-	width := tileSize * 4
-	height := tileSize
+func NewPaddle(position *components.Position, logger *log.BuiltinLogger, tag string) *Paddle {
+	hitbox := components.NewHitbox(position, tag)
 	return &Paddle{
-		x:      x,
-		y:      y,
-		xSpeed: 2.0,
-		hitbox: resolv.NewObject(x, y, width, height, tag),
-		logger: logger,
+		position: position,
+		xSpeed:   2,
+		ySpeed:   0,
+		hitbox:   hitbox,
+		logger:   logger,
 	}
 }
 
 func (p *Paddle) Update(wallTag string) error {
+	isXCollision, isYCollision := p.hitbox.Check(p.xSpeed, p.ySpeed, wallTag)
 
-	if collision := p.hitbox.Check(p.xSpeed, p.ySpeed, wallTag); collision != nil {
-		for _, object := range collision.Objects {
-			vector := collision.ContactWithObject(object)
-			// Todo, replace with vector math
-			if vector.X() == 0 {
-				p.xSpeed *= -1
-			}
-		}
+	if isXCollision {
+		p.xSpeed *= -1
 	}
 
-	p.x += p.xSpeed
-	p.hitbox.X += p.xSpeed
-	p.hitbox.Update()
-
+	p.position.SetX(p.position.X() + int(p.xSpeed))
+	p.hitbox.UpdatePosition(p.xSpeed, 0)
+	if isXCollision || isYCollision {
+		p.logger.Infof("Paddle - X: %d, Y: %d, isXCollision: %t, isYCollision: %t", p.position.X(), p.position.Y(), isXCollision, isYCollision)
+	}
 	return nil
 }
 
-func (p *Paddle) Draw(r *ebiten.Image, object *resolv.Object) {
-	ebitenutil.DrawRect(r, object.X, object.Y, object.W, object.H, color.White)
+func (p *Paddle) Draw(r *ebiten.Image) {
+	ebitenutil.DrawRect(r, float64(p.position.X()), float64(p.position.Y()), float64(p.position.Width()), float64(p.position.Height()), color.White)
 }

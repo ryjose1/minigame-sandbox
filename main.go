@@ -11,7 +11,7 @@ func main() {
 
 	logger := log.NewBuiltinLogger()
 
-	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowSize(1600, 900)
 	ebiten.SetWindowTitle("Brick Break!")
 	if err := ebiten.RunGame(brickbreak.NewGame(logger)); err != nil {
 		logger.Errorf("%w", err)
